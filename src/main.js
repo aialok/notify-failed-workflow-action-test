@@ -45,11 +45,11 @@ async function run() {
       return;
     }
 
-    if (isWorkflowRun) {
-      await getJobLogZip(octokit, run_id);
-    }
+    // if (isWorkflowRun) {
+    //   await getJobLogZip(octokit, run_id);
+    // }
 
-    const summary = await getSummary(octokit, isWorkflowRun, failedJob);
+    // const summary = await getSummary(octokit, isWorkflowRun, failedJob);
 
     // Send the email to the user
     const response = await setupAndSendEmail(
@@ -57,7 +57,7 @@ async function run() {
       sender_email_password,
       team_email_addresses,
       `${github.context.repo.repo} workflow failed`,
-      summary
+      failedJob
     );
 
     // Send the email to the team
