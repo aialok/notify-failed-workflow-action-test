@@ -7,6 +7,7 @@ import {
   getJobLogZip
 } from './github.js';
 import { setupAndSendEmail } from './email.js';
+import { Octokit } from "@octokit/rest"
 
 /**
  * The main function for the action.
@@ -30,12 +31,15 @@ async function run() {
     const team_email_addresses = core.getInput('team_email_addresses');
     const github_token = core.getInput('github_token');
     core.setSecret(github_token);
-    core.setSecret(slack_webhook);
+    // core.setSecret(slack_webhook);
+
 
     // Create a new octokit instance
-    const octokit = github.getOctokit(github_token);
+    const octokit = new Octokit({
+      auth: github_token
+    })
     const failedJob = await getfailedJob(octokit, run_id);
-    const workflowRun = await getWorkflowRun(octokit, run_id);
+    // const workflowRun = await getWorkflowRun(octokit, run_id);
 
     if (failedJob.length === 0) {
       core.info('No failed jobs found');

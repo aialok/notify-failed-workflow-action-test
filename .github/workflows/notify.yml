@@ -13,9 +13,13 @@ jobs:
     name: Notify Failed Workflow
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
       - uses: ./
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           sender_email: ${{ secrets.SENDER_EMAIL }}
           sender_email_password: ${{ secrets.SENDER_EMAIL_PASSWORD }}
           team_email_addresses: ${{ secrets.TEAM_EMAIL_ADDRESSES }}
