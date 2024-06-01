@@ -1,18 +1,31 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Notify Failed Workflow Action'
+description:
+  'This action sends a notification to a email address and a slack channel when
+  a workflow fails.'
+author: 'aialok'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  sender_email:
+    description: 'Email address to send message on behalf of.'
     required: true
-    default: '1000'
-
+  sender_email_password:
+    description: 'SMTP password for the email address of sender.'
+    required: true
+  team_email_addresses:
+    description: 'Email addresses for team notifications.'
+    required: false
+  slack_webhook:
+    description: 'Slack webhook URL to send the notification to.'
+    required: false
+  github_token:
+    description: 'GitHub token to access the repository.'
+    required: true
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  status:
+    description: 'Status of the notification.'
+    value: ${{ steps.notify.outputs.status }}
 
 runs:
   using: node20
