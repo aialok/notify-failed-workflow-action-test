@@ -14,7 +14,7 @@ inputs:
     required: true
   team_email_addresses:
     description: 'Email addresses for team notifications.'
-    required: false
+    required: true
   slack_webhook:
     description: 'Slack webhook URL to send the notification to.'
     required: false
