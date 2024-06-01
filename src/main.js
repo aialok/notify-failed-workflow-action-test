@@ -1,6 +1,6 @@
 import core from '@actions/core';
 import github from '@actions/github';
-import { getfailedJob } from './github.js';
+import { getfailedJob, getSummary } from './github.js';
 import { setupAndSendEmail } from './email.js';
 import { Octokit } from '@octokit/rest';
 
@@ -45,15 +45,15 @@ async function run() {
     //   await getJobLogZip(octokit, run_id);
     // }
 
-    // const summary = await getSummary(octokit, isWorkflowRun, failedJob);
+    const summary = await getSummary(octokit, isWorkflowRun, failedJob);
 
     // Send the email to the user
     const response = await setupAndSendEmail(
       sender_email,
       sender_email_password,
       team_email_addresses,
-      `${github.context.repo.repo} workflow failed`,
-      failedJob
+      `${github.context.repo.repo} workflow detected failed actions`,
+      summary
     );
 
     // Send the email to the team

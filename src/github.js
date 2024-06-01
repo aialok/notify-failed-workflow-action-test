@@ -53,32 +53,32 @@ export async function getJobAnnotations(octokit, jobId) {
   return excludeDefaultErrorAnnotations;
 }
 
-// export async function getSummary(octokit, isWorkflowRun, jobs) {
-//   core.debug(`jobs: ${jobs.length}`);
+export async function getSummary(octokit, isWorkflowRun, jobs) {
+  core.debug(`jobs: ${jobs.length}`);
 
-//   const summary = jobs.reduce(async (acc, job) => {
-//     const annotations = await getJobAnnotations(octokit, job.id);
+  const summary = jobs.reduce(async (acc, job) => {
+    const annotations = await getJobAnnotations(octokit, job.id);
 
-//     if (isWorkflowRun) {
-//       if (annotations.length > 0) {
-//         core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
-//         return [...(await acc), { ...job, annotations }];
-//       }
-//       const jobLog = await getJobLog(job);
-//       core.debug(`jobId: ${job.id}, log: ${jobLog.length}`);
-//       return [...(await acc), { ...job, jobLog }];
-//     }
+    if (isWorkflowRun) {
+      if (annotations.length > 0) {
+        core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
+        return [...(await acc), { ...job, annotations }];
+      }
+      const jobLog = await getJobLog(job);
+      core.debug(`jobId: ${job.id}, log: ${jobLog.length}`);
+      return [...(await acc), { ...job, jobLog }];
+    }
 
-//     if (annotations.length > 0) {
-//       core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
-//       return [...(await acc), { ...job, annotations }];
-//     }
+    if (annotations.length > 0) {
+      core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
+      return [...(await acc), { ...job, annotations }];
+    }
 
-//     return [...(await acc), { ...job }];
-//   });
+    return [...(await acc), { ...job }];
+  });
 
-//   return summary;
-// }
+  return summary;
+}
 
 export async function getJobLogZip(octokit, runId) {
   const res = await octokit.request(

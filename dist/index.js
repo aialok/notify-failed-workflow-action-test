@@ -49990,48 +49990,48 @@ const getWorkflowRun = async (octokit, run_id) => {
 
 async function getJobAnnotations(octokit, jobId) {
   const { data } = await octokit.rest.checks.listAnnotations({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
+    owner: lib_github.context.repo.owner,
+    repo: lib_github.context.repo.repo,
     check_run_id: jobId
   });
-  core.debug('fetched annotations');
+  lib_core.debug('fetched annotations');
 
   const excludeDefaultErrorAnnotations = data.filter(
     a => !isDefaultErrorMessage(a)
   );
-  core.debug(
+  lib_core.debug(
     `exclude default error annotations: ${excludeDefaultErrorAnnotations.length}`
   );
 
   return excludeDefaultErrorAnnotations;
 }
 
-// export async function getSummary(octokit, isWorkflowRun, jobs) {
-//   core.debug(`jobs: ${jobs.length}`);
+async function getSummary(octokit, isWorkflowRun, jobs) {
+  lib_core.debug(`jobs: ${jobs.length}`);
 
-//   const summary = jobs.reduce(async (acc, job) => {
-//     const annotations = await getJobAnnotations(octokit, job.id);
+  const summary = jobs.reduce(async (acc, job) => {
+    const annotations = await getJobAnnotations(octokit, job.id);
 
-//     if (isWorkflowRun) {
-//       if (annotations.length > 0) {
-//         core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
-//         return [...(await acc), { ...job, annotations }];
-//       }
-//       const jobLog = await getJobLog(job);
-//       core.debug(`jobId: ${job.id}, log: ${jobLog.length}`);
-//       return [...(await acc), { ...job, jobLog }];
-//     }
+    if (isWorkflowRun) {
+      if (annotations.length > 0) {
+        lib_core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
+        return [...(await acc), { ...job, annotations }];
+      }
+      const jobLog = await getJobLog(job);
+      lib_core.debug(`jobId: ${job.id}, log: ${jobLog.length}`);
+      return [...(await acc), { ...job, jobLog }];
+    }
 
-//     if (annotations.length > 0) {
-//       core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
-//       return [...(await acc), { ...job, annotations }];
-//     }
+    if (annotations.length > 0) {
+      lib_core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
+      return [...(await acc), { ...job, annotations }];
+    }
 
-//     return [...(await acc), { ...job }];
-//   });
+    return [...(await acc), { ...job }];
+  });
 
-//   return summary;
-// }
+  return summary;
+}
 
 async function getJobLogZip(octokit, runId) {
   const res = await octokit.request(
@@ -50062,9 +50062,9 @@ async function getJobLog(job) {
   const logs = failedSteps?.map(s => {
     const sanitizedJobName = job.name.replaceAll('/', '');
 
-    const baseDir = path.join(process.cwd(), LOG_DIR);
-    const normalizedPath = path.normalize(
-      path.join(
+    const baseDir = external_path_.join(process.cwd(), LOG_DIR);
+    const normalizedPath = external_path_.normalize(
+      external_path_.join(
         process.cwd(),
         LOG_DIR,
         sanitizedJobName,
@@ -50076,14 +50076,14 @@ async function getJobLog(job) {
       throw new Error('Invalid path');
     }
 
-    const logFile = fs.readFileSync(normalizedPath);
+    const logFile = external_fs_.readFileSync(normalizedPath);
 
     return {
       log: formatLog(logFile.toString()),
       stepName: s.name
     };
   });
-  core.debug('get log from logfile');
+  lib_core.debug('get log from logfile');
 
   return logs || [];
 }
@@ -50188,15 +50188,15 @@ async function run() {
     //   await getJobLogZip(octokit, run_id);
     // }
 
-    // const summary = await getSummary(octokit, isWorkflowRun, failedJob);
+    const summary = await getSummary(octokit, isWorkflowRun, failedJob);
 
     // Send the email to the user
     const response = await setupAndSendEmail(
       sender_email,
       sender_email_password,
       team_email_addresses,
-      `${lib_github.context.repo.repo} workflow failed`,
-      failedJob
+      `${lib_github.context.repo.repo} workflow detected failed actions`,
+      summary
     );
 
     // Send the email to the team
