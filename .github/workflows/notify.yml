@@ -22,4 +22,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           sender_email: ${{ secrets.SENDER_EMAIL }}
           sender_email_password: ${{ secrets.SENDER_EMAIL_PASSWORD }}
-          team_email_addresses: ${{ secrets.TEAM_EMAIL_ADDRESSES }}
+          team_email_addresses: ${{ vars.TEAM_EMAIL_ADDRESSES }}
