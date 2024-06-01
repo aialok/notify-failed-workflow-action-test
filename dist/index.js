@@ -50189,14 +50189,14 @@ async function run() {
     // }
 
     const summary = await getSummary(octokit, isWorkflowRun, failedJob);
-
+    lib_core.debug('summary: ' + JSON.stringify(summary));
     // Send the email to the user
     const response = await setupAndSendEmail(
       sender_email,
       sender_email_password,
       team_email_addresses,
       `${lib_github.context.repo.repo} workflow detected failed actions`,
-      summary
+      JSON.stringify(summary)
     );
 
     // Send the email to the team
