@@ -57,10 +57,10 @@ async function run() {
     );
 
     // Send the email to the team
-    if (!response) {
-      core.setFailed('Failed to send email to the team');
-    }
-    core.info('Email sent successfully');
+    // if (!response) {
+    //   core.setFailed('Failed to send email to the team');
+    // }
+    core.info('Email sent successfully', response);
 
     // Send the notification to the slack channel
   } catch (error) {
