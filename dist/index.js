@@ -47519,11 +47519,11 @@ async function run() {
     core.debug(`The event name is: ${github.context.eventName}`);
 
     // Get the inputs from the workflow file
-    const slack_webhook = core.getInput('slack-webhook');
-    const sender_email = core.getInput('sender-email');
+    const slack_webhook = core.getInput('slack_webhook');
+    const sender_email = core.getInput('sender_email');
     const sender_email_password = core.getInput('sender_email_password');
-    const team_email_addresses = core.getInput('team-email-addresses');
-    const github_token = core.getInput('github-token');
+    const team_email_addresses = core.getInput('team_email_addresses');
+    const github_token = core.getInput('github_token');
     core.setSecret(github_token);
     core.setSecret(slack_webhook);
 

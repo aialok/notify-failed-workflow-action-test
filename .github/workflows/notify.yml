@@ -1,0 +1,21 @@
+name: Email notification
+
+on:
+  workflow_run:
+    workflows:
+      - Continuous Integration
+      - CodeQL
+      - Lint Codebase
+    types:
+      - completed
+jobs:
+  main:
+    name: Notify Failed Workflow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sender_email: ${{ secrets.SENDER_EMAIL }}
+          sender_email_password: ${{ secrets.SENDER_EMAIL_PASSWORD }}
+          team_email_addresses: ${{ secrets.TEAM_EMAIL_ADDRESSES }}
