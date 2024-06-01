@@ -15,12 +15,12 @@ export const getfailedJob = async (octokit, run_id) => {
     run_id: run_id
   });
 
-  core.debug('fetched jobs for workflow run');
+  core.debug('fetched jobs for workflow run', jobs);
 
   const completed_jobs = jobs.data.jobs.filter(
     job => job.status === 'completed'
   );
-  const failed_job = completed_jobs.find(job => job.conclusion === 'failure');
+  const failed_job = completed_jobs.filter(job => job.conclusion === 'failure');
   return failed_job || [];
 };
 

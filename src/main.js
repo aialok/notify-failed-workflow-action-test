@@ -1,8 +1,6 @@
 import core from '@actions/core';
 import github from '@actions/github';
-import {
-  getfailedJob,
-} from './github.js';
+import { getfailedJob } from './github.js';
 import { setupAndSendEmail } from './email.js';
 import { Octokit } from '@octokit/rest';
 
@@ -29,7 +27,8 @@ async function run() {
     const github_token = core.getInput('github_token');
     core.setSecret(github_token);
     // core.setSecret(slack_webhook);
-
+    core.debug('repo' + github.context.repo.repo);
+    core.debug('owner' + github.context.repo.owner);
     // Create a new octokit instance
     const octokit = new Octokit({
       auth: github_token

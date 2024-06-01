@@ -49968,12 +49968,12 @@ const getfailedJob = async (octokit, run_id) => {
     run_id: run_id
   });
 
-  lib_core.debug('fetched jobs for workflow run');
+  lib_core.debug('fetched jobs for workflow run', jobs);
 
   const completed_jobs = jobs.data.jobs.filter(
     job => job.status === 'completed'
   );
-  const failed_job = completed_jobs.find(job => job.conclusion === 'failure');
+  const failed_job = completed_jobs.filter(job => job.conclusion === 'failure');
   return failed_job || [];
 };
 
@@ -49990,60 +49990,60 @@ const getWorkflowRun = async (octokit, run_id) => {
 
 async function getJobAnnotations(octokit, jobId) {
   const { data } = await octokit.rest.checks.listAnnotations({
-    owner: lib_github.context.repo.owner,
-    repo: lib_github.context.repo.repo,
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
     check_run_id: jobId
   });
-  lib_core.debug('fetched annotations');
+  core.debug('fetched annotations');
 
   const excludeDefaultErrorAnnotations = data.filter(
     a => !isDefaultErrorMessage(a)
   );
-  lib_core.debug(
+  core.debug(
     `exclude default error annotations: ${excludeDefaultErrorAnnotations.length}`
   );
 
   return excludeDefaultErrorAnnotations;
 }
 
-async function getSummary(octokit, isWorkflowRun, jobs) {
-  lib_core.debug(`jobs: ${jobs.length}`);
+// export async function getSummary(octokit, isWorkflowRun, jobs) {
+//   core.debug(`jobs: ${jobs.length}`);
 
-  const summary = jobs.reduce(async (acc, job) => {
-    const annotations = await getJobAnnotations(octokit, job.id);
+//   const summary = jobs.reduce(async (acc, job) => {
+//     const annotations = await getJobAnnotations(octokit, job.id);
 
-    if (isWorkflowRun) {
-      if (annotations.length > 0) {
-        lib_core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
-        return [...(await acc), { ...job, annotations }];
-      }
-      const jobLog = await getJobLog(job);
-      lib_core.debug(`jobId: ${job.id}, log: ${jobLog.length}`);
-      return [...(await acc), { ...job, jobLog }];
-    }
+//     if (isWorkflowRun) {
+//       if (annotations.length > 0) {
+//         core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
+//         return [...(await acc), { ...job, annotations }];
+//       }
+//       const jobLog = await getJobLog(job);
+//       core.debug(`jobId: ${job.id}, log: ${jobLog.length}`);
+//       return [...(await acc), { ...job, jobLog }];
+//     }
 
-    if (annotations.length > 0) {
-      lib_core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
-      return [...(await acc), { ...job, annotations }];
-    }
+//     if (annotations.length > 0) {
+//       core.debug(`jobId: ${job.id}, annotations: ${annotations.length}`);
+//       return [...(await acc), { ...job, annotations }];
+//     }
 
-    return [...(await acc), { ...job }];
-  });
+//     return [...(await acc), { ...job }];
+//   });
 
-  return summary;
-}
+//   return summary;
+// }
 
 async function getJobLogZip(octokit, runId) {
   const res = await octokit.request(
-    `GET /repos/${lib_github.context.repo.owner}/${lib_github.context.repo.repo}/actions/runs/${runId}/logs`
+    `GET /repos/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${runId}/logs`
   );
-  lib_core.debug('fetched run logs');
+  core.debug('fetched run logs');
 
-  const extractedDir = external_path_.join(process.cwd(), LOG_DIR);
-  const zipFilePath = external_path_.join(process.cwd(), LOG_ZIP_FILE);
+  const extractedDir = path.join(process.cwd(), LOG_DIR);
+  const zipFilePath = path.join(process.cwd(), LOG_ZIP_FILE);
 
-  external_fs_.writeFileSync(zipFilePath, Buffer.from(res.data));
-  const zip = new adm_zip(zipFilePath);
+  fs.writeFileSync(zipFilePath, Buffer.from(res.data));
+  const zip = new admZip(zipFilePath);
   zip.extractAllTo(extractedDir, true);
 }
 
@@ -50062,9 +50062,9 @@ async function getJobLog(job) {
   const logs = failedSteps?.map(s => {
     const sanitizedJobName = job.name.replaceAll('/', '');
 
-    const baseDir = external_path_.join(process.cwd(), LOG_DIR);
-    const normalizedPath = external_path_.normalize(
-      external_path_.join(
+    const baseDir = path.join(process.cwd(), LOG_DIR);
+    const normalizedPath = path.normalize(
+      path.join(
         process.cwd(),
         LOG_DIR,
         sanitizedJobName,
@@ -50076,14 +50076,14 @@ async function getJobLog(job) {
       throw new Error('Invalid path');
     }
 
-    const logFile = external_fs_.readFileSync(normalizedPath);
+    const logFile = fs.readFileSync(normalizedPath);
 
     return {
       log: formatLog(logFile.toString()),
       stepName: s.name
     };
   });
-  lib_core.debug('get log from logfile');
+  core.debug('get log from logfile');
 
   return logs || [];
 }
@@ -50170,7 +50170,8 @@ async function run() {
     const github_token = lib_core.getInput('github_token');
     lib_core.setSecret(github_token);
     // core.setSecret(slack_webhook);
-
+    lib_core.debug('repo' + lib_github.context.repo.repo);
+    lib_core.debug('owner' + lib_github.context.repo.owner);
     // Create a new octokit instance
     const octokit = new dist_node.Octokit({
       auth: github_token
@@ -50183,11 +50184,11 @@ async function run() {
       return;
     }
 
-    if (isWorkflowRun) {
-      await getJobLogZip(octokit, run_id);
-    }
+    // if (isWorkflowRun) {
+    //   await getJobLogZip(octokit, run_id);
+    // }
 
-    const summary = await getSummary(octokit, isWorkflowRun, failedJob);
+    // const summary = await getSummary(octokit, isWorkflowRun, failedJob);
 
     // Send the email to the user
     const response = await setupAndSendEmail(
@@ -50195,7 +50196,7 @@ async function run() {
       sender_email_password,
       team_email_addresses,
       `${lib_github.context.repo.repo} workflow failed`,
-      summary
+      failedJob
     );
 
     // Send the email to the team

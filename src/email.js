@@ -35,5 +35,4 @@ const setupAndSendEmail = async (
   }
 };
 
-
 export { setupAndSendEmail };
