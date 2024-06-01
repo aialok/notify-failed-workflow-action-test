@@ -1,30 +1,72 @@
-const core = require('@actions/core')
-const { wait } = require('./wait')
+import core from '@actions/core';
+import github from '@actions/github';
+import {
+  getWorkflowRun,
+  getfailedJob,
+  getSummary,
+  getJobLogZip
+} from './github.js';
+import { setupAndSendEmail } from './email.js';
 
 /**
  * The main function for the action.
+ * This will be uses to find which workflow is get failed and it will send notification to slack channel and also send email to the user.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
   try {
-    const ms = core.getInput('milliseconds', { required: true })
+    const isWorkflowRun = github.context.eventName === 'workflow_run';
+    const run_id = isWorkflowRun
+      ? github.context.payload.workflow_run.id
+      : github.context.runId;
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.debug(`The run id is: ${run_id}`);
+    core.debug(`The event name is: ${github.context.eventName}`);
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    // Get the inputs from the workflow file
+    const slack_webhook = core.getInput('slack_webhook');
+    const sender_email = core.getInput('sender_email');
+    const sender_email_password = core.getInput('sender_email_password');
+    const team_email_addresses = core.getInput('team_email_addresses');
+    const github_token = core.getInput('github_token');
+    core.setSecret(github_token);
+    core.setSecret(slack_webhook);
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    // Create a new octokit instance
+    const octokit = github.getOctokit(github_token);
+    const failedJob = await getfailedJob(octokit, run_id);
+    const workflowRun = await getWorkflowRun(octokit, run_id);
+
+    if (failedJob.length === 0) {
+      core.info('No failed jobs found');
+      return;
+    }
+
+    if (isWorkflowRun) {
+      await getJobLogZip(octokit, run_id);
+    }
+
+    const summary = await getSummary(octokit, isWorkflowRun, failedJob);
+
+    // Send the email to the user
+    const response = await setupAndSendEmail(
+      sender_email,
+      sender_email_password,
+      team_email_addresses,
+      `${github.context.repo.repo} workflow failed`,
+      summary
+    );
+
+    // Send the email to the team
+    if (!response) {
+      core.setFailed('Failed to send email to the team');
+    }
+    core.info('Email sent successfully');
+
+    // Send the notification to the slack channel
   } catch (error) {
-    // Fail the workflow run if an error occurs
-    core.setFailed(error.message)
+    core.setFailed(error.message);
   }
 }
 
-module.exports = {
-  run
-}
+export { run };
