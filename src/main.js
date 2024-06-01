@@ -7,7 +7,7 @@ import {
   getJobLogZip
 } from './github.js';
 import { setupAndSendEmail } from './email.js';
-import { Octokit } from "@octokit/rest"
+import { Octokit } from '@octokit/rest';
 
 /**
  * The main function for the action.
@@ -33,11 +33,10 @@ async function run() {
     core.setSecret(github_token);
     // core.setSecret(slack_webhook);
 
-
     // Create a new octokit instance
     const octokit = new Octokit({
       auth: github_token
-    })
+    });
     const failedJob = await getfailedJob(octokit, run_id);
     // const workflowRun = await getWorkflowRun(octokit, run_id);
 

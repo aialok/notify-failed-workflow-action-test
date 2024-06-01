@@ -4,16 +4,16 @@ import fs from 'fs';
 import path from 'path';
 import admZip from 'adm-zip';
 
-const LOG_DIR = 'logs'
-const LOG_ZIP_FILE = 'logs.zip'
-const LATEST_LINES = 30
+const LOG_DIR = 'logs';
+const LOG_ZIP_FILE = 'logs.zip';
+const LATEST_LINES = 30;
 
 export const getfailedJob = async (octokit, run_id) => {
   const jobs = await octokit.rest.actions.listJobsForWorkflowRun({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     run_id: run_id
-  })
+  });
 
   core.debug('fetched jobs for workflow run');
 
