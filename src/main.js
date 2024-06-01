@@ -1,10 +1,7 @@
 import core from '@actions/core';
 import github from '@actions/github';
 import {
-  getWorkflowRun,
   getfailedJob,
-  getSummary,
-  getJobLogZip
 } from './github.js';
 import { setupAndSendEmail } from './email.js';
 import { Octokit } from '@octokit/rest';
