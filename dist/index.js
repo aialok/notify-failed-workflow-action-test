@@ -50121,18 +50121,18 @@ const setupAndSendEmail = async (
 
     const email = team_email_addresses.split(',');
 
-    email.forEach(async email => {
+    lib_core.debug('Sending email to: ' + email);
+
+    email.forEach(async e => {
       await transport.sendMail({
         from: sender_email,
-        to: email,
+        to: e,
         subject: subject,
         text: text
       });
     });
-
-    lib_core.debug('email sent successfully');
   } catch (error) {
-    lib_core.core.setFailed(error.message);
+    lib_core.setFailed(error.message);
   }
 };
 

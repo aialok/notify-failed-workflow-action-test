@@ -20,18 +20,18 @@ const setupAndSendEmail = async (
 
     const email = team_email_addresses.split(',');
 
-    email.forEach(async email => {
+    core.debug('Sending email to: ' + email);
+
+    email.forEach(async e => {
       await transport.sendMail({
         from: sender_email,
-        to: email,
+        to: e,
         subject: subject,
         text: text
       });
     });
-
-    core.debug('email sent successfully');
   } catch (error) {
-    core.core.setFailed(error.message);
+    core.setFailed(error.message);
   }
 };
 
